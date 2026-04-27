@@ -89,6 +89,19 @@ Key source locations:
 | Linux | `WgpuRenderer` | wgpu (auto-selects Vulkan/OpenGL) |
 | Windows | `DirectXRenderer` | DirectX 11 (`ID3D11Device`) |
 
+## Git Workflow
+
+- **DO NOT commit or push to GitHub automatically.** Always wait for explicit user instruction before committing or pushing.
+- When fixes are done, stage files and propose a commit message, but do NOT execute `git commit` or `git push` unless the user explicitly asks.
+
+## Edit Session Checklist
+
+At the end of every editing session, MUST complete these steps:
+
+1. **`mdbook build` must pass** — run `mdbook build` and confirm no errors
+2. **TOC/content consistency** — ensure `src/SUMMARY.md` (rendered TOC) and `src/outline.md` (planning doc) match the actual chapter content; update both when sections are added, renamed, or removed
+3. **Chapter numbering** — verify section numbers in the file match the headings (e.g., `### 19.3.1` matches the title)
+
 ## Update Process (When GPUI Source Changes)
 
 1. Review changed GPUI source at `/home/ljj/work/zed/crates/gpui/`

@@ -392,7 +392,6 @@
   - 19.2.2 `row_start()`、`row_end()`、`row_span()`
 - 19.3 内容尺寸
   - 19.3.1 `min-content` 与 `max-content`
-  - 19.3.2 `fr` 分数单位
 - 19.4 Grid vs Flex
   - 19.4.1 何时选 Grid
   - 19.4.2 何时选 Flex
