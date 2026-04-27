@@ -64,31 +64,19 @@ div()
 
 ### 18.2.1 `flex_grow()` —— 填充剩余空间
 
-`flex_grow` 控制子元素在空间充裕时的放大比例。值为 `f32` 类型。
+`flex_grow` 控制子元素在空间充裕时的放大比例。
 
 ```rust
-// 子元素 B 占剩余空间的 2 倍
+// A 和 C 各占 1 份，B 不增长
 div()
     .flex()
     .gap_2()
-    .child(div().flex_grow().bg(red).child("A: 1份"))    // grow = 1
-    .child(div().flex_grow().flex_grow_0().bg(green))    // grow = 0
-    .child(div().flex_grow().bg(blue).child("C: 2份"))   // grow = 2
+    .child(div().flex_grow().bg(red).child("A: 增长"))    // grow = 1
+    .child(div().flex_grow_0().bg(green).child("B: 不增长"))  // grow = 0
+    .child(div().flex_grow().bg(blue).child("C: 增长"))   // grow = 1
 ```
 
-注意：GPUI 的 `flex_grow()` 方法不带参数，设置 grow 为 1。如需其他值，需要在 `.style()` 上直接操作。
-
-```rust
-// 直接通过 style 设置 grow 值
-div()
-    .flex()
-    .child(div().flex_grow())  // grow = 1
-    .child({
-        let mut d = div();
-        d.style().flex_grow = Some(2.0);
-        d
-    })
-```
+`flex_grow()` 设置 grow 为 1，`flex_grow_0()` 设置 grow 为 0。GPUI 的 Styled trait 不提供带参数的 `flex_grow(n)` 方法——目前只支持 0 和 1 两种增长系数。
 
 ### 18.2.2 `flex_shrink()` —— 空间不足时收缩
 
