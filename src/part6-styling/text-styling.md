@@ -438,7 +438,7 @@ impl Render for Badge {
         };
 
         div()
-            .inline_flex()
+            .flex()
             .items_center()
             .px_2()
             .py_0()

@@ -359,16 +359,18 @@ let corners = Corners {
 ```rust
 use gpui::Anchor;
 
-// 九个锚点位置
+// 八个锚点位置
 Anchor::TopLeft      // 左上
-Anchor::TopCenter    // 上中
 Anchor::TopRight     // 右上
+Anchor::TopCenter    // 上中
+Anchor::BottomLeft   // 左下
+Anchor::BottomRight  // 右下
+Anchor::BottomCenter // 下中
 Anchor::LeftCenter   // 左中
 Anchor::RightCenter  // 右中
-Anchor::BottomLeft   // 左下
-Anchor::BottomCenter // 下中
-Anchor::BottomRight  // 右下
 ```
+
+注意：`Anchor` 没有 `Center` 变体——中心点不在枚举中。
 
 ### 20.6.4 `Radians` 与 `Percentage`
 

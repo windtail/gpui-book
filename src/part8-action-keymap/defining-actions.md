@@ -199,23 +199,17 @@ impl gpui::Action for Paste {
 register_action!(Paste);
 ```
 
-### 30.4.2 `#[register_action]` 属性宏
+### 30.4.2 `register_action!` 与 `#[derive(Action)]` 的区别
+
+`register_action!()` 宏用于手动实现了 `Action` trait 的结构体注册类型：
 
 ```rust
-use gpui::{register_action, Action};
-use serde::{Deserialize, Serialize};
-use schemars::JsonSchema;
+use gpui::register_action;
 
-#[derive(Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
-#[register_action]
-pub struct CustomAction {
-    pub value: i32,
-}
-
-// 等价于手动实现 Action trait + register_action!(CustomAction)
+register_action!(Paste);
 ```
 
-`#[register_action]` 自动生成 `Action` trait 实现并注册类型。
+对于使用 `#[derive(Action)]` 的结构体，不需要手动注册——derive 宏已自动处理。`register_action!()` 主要用于无法使用 derive 的场景（如包含非序列化字段的手动实现）。
 
 ## 30.5 特殊 Action
 
@@ -236,16 +230,16 @@ cx.bind_keys(vec![
 
 `Unbind` 解绑特定 Action 的某个快捷键：
 
+`Unbind` 是元组结构体 `Unbind(pub SharedString)`，直接构造即可：
+
 ```rust
 use gpui::Unbind;
 
 // 在编辑器中解绑 tab 键的默认行为
 cx.bind_keys(vec![
-    KeyBinding::new("tab", Unbind::new("editor::Tab"), Some("Editor")),
+    KeyBinding::new("tab", Unbind("editor::Tab".into()), Some("Editor")),
 ]);
 ```
-
-`Unbind::new("action_name")` 创建一个解绑指令，只针对指定 Action。
 
 ## 30.6 Action 设计原则
 

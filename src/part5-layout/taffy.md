@@ -165,8 +165,6 @@ AvailableSpace::MaxContent           // 最大内容约束
 pub fn request_measured_layout(
     &mut self,
     style: Style,
-    rem_size: Pixels,
-    scale_factor: f32,
     measure: impl FnMut(
         Size<Option<Pixels>>,    // 已知维度（None = 需要测量）
         Size<AvailableSpace>,    // 可用空间约束
@@ -274,41 +272,28 @@ impl Element for CircleLayout {
     }
 
     fn prepaint(&mut self, child_ids: Vec<LayoutId>, window: &mut Window, cx: &mut App) {
-        // 手动将子元素布局到圆周上
-        let center = point(self.radius, self.radius);
-        let count = child_ids.len() as f32;
-        for (i, child_id) in child_ids.iter().enumerate() {
-            let angle = (i as f32 / count) * std::f32::consts::PI * 2.0;
-            let x = center.x + angle.cos() * self.radius * 0.7;
-            let y = center.y + angle.sin() * self.radius * 0.7;
-            window.set_child_offset(*child_id, point(x, y));
-        }
+        // Taffy 已自动完成子元素布局，prepaint 阶段可用于
+        // 注册 hitbox 或其他准备工作
     }
 }
 ```
 
 ## 21.5 布局调试
 
-### 21.5.1 打印布局树
+### 21.5.1 使用 `debug()` 查看布局
 
-在 Taffy 内部有一些调试工具可以帮助理解布局：
+在 `debug_assertions` 启用时，GPUI 提供了 `debug()` 方法为元素添加可视化边框：
 
 ```rust
-// TaffyLayoutEngine 内部的调试方法
-impl TaffyLayoutEngine {
-    fn count_all_children(&self, parent: LayoutId) -> u32 {
-        // 统计子节点总数
-    }
-
-    fn max_depth(&self, depth: u32, parent: LayoutId) -> u32 {
-        // 计算布局树最大深度
-    }
-
-    fn get_edges(&self, parent: LayoutId) -> Vec<(LayoutId, LayoutId)> {
-        // 输出树的边（可用于 Mermaid 可视化）
-    }
-}
+div()
+    .flex()
+    .child("内容")
+    .debug()  // 添加随机颜色边框以调试布局
 ```
+
+### 21.5.2 打印布局树
+
+Taffy 内部支持 `Debug` trait，可以通过设置环境变量 `TAFFY_DEBUG=1` 启用布局调试输出。
 
 在开发中，使用 `.debug()` 方法更直观：
 

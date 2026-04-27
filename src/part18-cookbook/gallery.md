@@ -274,6 +274,18 @@ div()
 use gpui::*;
 use std::time::Duration;
 
+fn button(id: impl Into<ElementId>, text: impl Into<SharedString>) -> impl IntoElement {
+    div()
+        .id(id)
+        .px_3()
+        .py_1()
+        .rounded_md()
+        .bg(rgb(0x3b82f6))
+        .text_white()
+        .cursor_pointer()
+        .child(text.into())
+}
+
 const SAMPLE_IMAGES: &[&str] = &[
     "https://picsum.photos/seed/a1/400/300",
     "https://picsum.photos/seed/b2/400/300",

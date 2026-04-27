@@ -328,44 +328,40 @@ impl NestedList {
 
 嵌套列表中，子元素的点击通过 `stop_propagation()` 阻止事件冒泡到父级项目。
 
-### 29.4.3 拖拽时的鼠标捕获
+### 29.4.3 拖拽时的鼠标事件
 
-拖拽时需要全局跟踪鼠标，不受元素边界限制：
+拖拽时需要跟踪鼠标位置，通过 `on_mouse_move` 监听：
 
 ```rust
 struct DraggableSlider {
     value: f32,
     dragging: bool,
+    track_bounds: Bounds<Pixels>,
 }
 
 impl Render for DraggableSlider {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let track_bounds = window.bounds();
-
         div()
             .id("slider-track")
             .size(px(300.0))
             .h(px(4.0))
-            .bg(gray_300)
+            .bg(rgb(0x999999))
             .rounded_full()
             .on_mouse_down(MouseButton::Left, cx.listener(|this, event: &MouseDownEvent, window, cx| {
                 this.dragging = true;
                 this.update_value(event.position, window, cx);
-                // 捕获鼠标，即使鼠标移出元素区域也继续接收事件
-                window.capture_mouse(window.bounds(), cx);
-                cx.notify();
             }))
-            .when(self.dragging, |d| {
+            .when(this.dragging, |d| {
                 d.on_mouse_move(cx.listener(|this, event: &MouseMoveEvent, window, cx| {
-                    this.update_value(event.position, window, cx);
-                    cx.notify();
-                }))
-                .on_mouse_up(MouseButton::Left, cx.listener(|this, _, window, cx| {
-                    this.dragging = false;
-                    window.release_mouse(cx);
-                    cx.notify();
+                    if this.dragging {
+                        this.update_value(event.position, window, cx);
+                    }
                 }))
             })
+            .on_mouse_up(MouseButton::Left, cx.listener(|this, _, window, cx| {
+                this.dragging = false;
+                cx.notify();
+            }))
     }
 }
 
@@ -374,8 +370,9 @@ impl DraggableSlider {
         let track_width = 300.0;
         let x = position.x.0.clamp(0.0, track_width);
         self.value = x / track_width;
+        cx.notify();
     }
 }
 ```
 
-`window.capture_mouse()` 让元素在拖拽期间持续接收鼠标事件，即使鼠标移动到元素外部。拖拽结束时用 `window.release_mouse()` 释放。
+拖拽期间通过 `on_mouse_move` 持续接收事件。注意：GPUI 不提供 `capture_mouse` / `release_mouse` API —— 鼠标事件基于 Hitbox 分发，超出元素边界后不再触发 `on_mouse_move`。如需跨边界跟踪，可在全局层级注册鼠标事件。

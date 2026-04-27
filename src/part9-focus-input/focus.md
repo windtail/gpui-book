@@ -93,24 +93,33 @@ impl Render for InputField {
             .child(&self.value)
     }
 
-    fn is_focused(&self, cx: &mut Context<Self>) -> bool {
-        cx.has_focus(&self.focus_handle)
+    fn is_focused(&self, window: &Window) -> bool {
+        self.focus_handle.is_focused(window)
     }
 }
 ```
 
-`.focus()` 快捷方法标记元素为可聚焦并追踪焦点：
+`.focusable()` 快捷方法标记元素为可聚焦（但不追踪特定 handle）：
 
 ```rust
-// 等价于 track_focus，但语义更清晰
+// 仅使元素可聚焦，不追踪特定 handle
 div()
     .id("input")
-    .focus(&self.focus_handle)  // 等同于 .track_focus().focusable()
+    .focusable()
+```
+
+如需关联特定 `FocusHandle` 以应用样式，使用 `.track_focus()`：
+
+```rust
+// 追踪 handle 并设置 focusable = true
+div()
+    .id("input")
+    .track_focus(&self.focus_handle)
 ```
 
 ### 34.2.2 焦点变化回调
 
-使用 `cx.observe_focus()` 监听焦点变化：
+使用 `cx.on_focus()` 和 `cx.on_blur()` 监听焦点变化：
 
 ```rust
 struct SearchBar {
@@ -119,12 +128,19 @@ struct SearchBar {
 }
 
 impl SearchBar {
-    fn new(cx: &mut Context<Self>) -> Self {
+    fn new(cx: &mut Context<Self>, window: &mut Window) -> Self {
         let focus_handle = cx.focus_handle();
 
-        // 监听焦点变化
-        cx.observe_focus(&focus_handle, |this, window, cx| {
-            this.expanded = cx.has_focus(&this.focus_handle);
+        // 监听获得焦点
+        cx.on_focus(&focus_handle, window, |this, window, cx| {
+            this.expanded = true;
+            cx.notify();
+        })
+        .detach();
+
+        // 监听失去焦点
+        cx.on_blur(&focus_handle, window, |this, window, cx| {
+            this.expanded = false;
             cx.notify();
         })
         .detach();
@@ -137,9 +153,9 @@ impl SearchBar {
 }
 ```
 
-### 34.2.3 `FocusOutEvent`
+### 34.2.3 焦点变化回调
 
-焦点离开元素时触发：
+焦点离开元素时，通过 `cx.on_blur()` 在 `new()` 中注册回调：
 
 ```rust
 struct AutoSaveInput {
@@ -148,25 +164,28 @@ struct AutoSaveInput {
     saved_value: String,
 }
 
-impl Render for AutoSaveInput {
-    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        div()
-            .id("autosave-input")
-            .track_focus(&self.focus_handle)
-            .on_blur(cx.listener(|this, _event: &FocusOutEvent, _, cx| {
-                // 失去焦点时自动保存
-                if this.value != this.saved_value {
-                    this.save();
-                    this.saved_value = this.value.clone();
-                }
-                cx.notify();
-            }))
-            .child(&self.value)
+impl AutoSaveInput {
+    fn new(cx: &mut Context<Self>, window: &mut Window) -> Self {
+        let focus_handle = cx.focus_handle();
+
+        cx.on_blur(&focus_handle, window, |this, window, cx| {
+            // 失去焦点时自动保存
+            if this.value != this.saved_value {
+                this.save();
+                this.saved_value = this.value.clone();
+            }
+            cx.notify();
+        })
+        .detach();
+
+        AutoSaveInput {
+            focus_handle,
+            value: String::new(),
+            saved_value: String::new(),
+        }
     }
 }
 ```
-
-`FocusOutEvent` 在焦点离开此元素时触发。
 
 ## 34.3 焦点管理
 
@@ -186,16 +205,16 @@ div()
     .child("编辑")
 ```
 
-### 34.3.2 `cx.blur()` 移除焦点
+### 34.3.2 `window.blur()` 移除焦点
 
 ```rust
 // 移除焦点，焦点回到窗口
-window.blur(cx);
+window.blur();
 
 // 在 Escape 键处理中
 .on_key_down(cx.listener(|this, event: &KeyDownEvent, window, cx| {
     if event.keystroke.key == "escape" {
-        window.blur(cx);
+        window.blur();
         cx.stop_propagation();
         cx.prevent_default();
     }
@@ -206,18 +225,18 @@ window.blur(cx);
 
 ```rust
 impl InputField {
-    fn is_focused(&self, cx: &mut Context<Self>) -> bool {
-        cx.has_focus(&self.focus_handle)
+    fn is_focused(&self, window: &Window) -> bool {
+        self.focus_handle.is_focused(window)
     }
 
-    fn contains_focused(&self, cx: &mut Context<Self>) -> bool {
-        cx.contains_focused(&self.focus_handle)
+    fn contains_focused(&self, window: &Window, cx: &App) -> bool {
+        self.focus_handle.contains_focused(window, cx)
     }
 }
 ```
 
-- `cx.has_focus(handle)`：该 handle 是否是当前焦点元素
-- `cx.contains_focused(handle)`：当前焦点是否在该 handle 或其子元素中
+- `focus_handle.is_focused(window)`：该 handle 是否是当前焦点元素
+- `focus_handle.contains_focused(window, cx)`：当前焦点是否在该 handle 或其子元素中
 
 ## 34.4 Tab 导航
 

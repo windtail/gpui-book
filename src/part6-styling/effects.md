@@ -31,7 +31,7 @@ div()
     .border_1()
     .border_color(red)           // 命名颜色
     .border_color(rgb(0xcc0000)) // RGB
-    .border_color(cx.theme().border)  // 主题颜色
+    .border_color(Colors::for_appearance(window).border)  // 主题颜色
     .child("红色边框")
 ```
 
@@ -56,7 +56,7 @@ div().border_1().border_dotted().child("点线")
 // 仅底部边框（常用于分割线效果）
 div()
     .border_b_1()
-    .border_color(cx.theme().border)
+    .border_color(Colors::for_appearance(window).border)
     .p_4()
     .child("底部有边框的元素")
 

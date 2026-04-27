@@ -165,19 +165,19 @@ div()
 GPUI 支持线性渐变作为背景填充：
 
 ```rust
-use gpui::LinearGradient;
+use gpui::linear_gradient;
 
 div()
-    .bg(LinearGradient {
-        angle: LinearAngle::Deg(135.0),
-        stops: vec![
-            GradientColorStop { color: rgb(0x667eea), position: 0.0 },
-            GradientColorStop { color: rgb(0x764ba2), position: 1.0 },
-        ],
-    })
+    .bg(linear_gradient(
+        135.0,  // 角度（度）
+        linear_color_stop(rgb(0x667eea), 0.0),  // 起点颜色
+        linear_color_stop(rgb(0x764ba2), 1.0),  // 终点颜色
+    ))
     .p_6()
     .child("渐变背景")
 ```
+
+`linear_gradient(angle, from, to)` 创建线性渐变，返回 `Background` 类型，直接用于 `.bg()`。角度 0° 表示从顶部开始，顺时针递增。
 
 ## 23.5 外观 (Appearance) 系统
 

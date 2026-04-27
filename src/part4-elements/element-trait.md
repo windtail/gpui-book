@@ -36,7 +36,7 @@ GPUI 采用混合模式：
 div()
     .flex()
     .child("Hello")
-    .child(button().label("Click"))
+    .child(div().child("Click"))
 
 // 命令式：GPU 实际执行的操作
 // 1. 为 div 创建 LayoutId
@@ -153,7 +153,7 @@ impl Element for FixedSizeBox {
         cx: &mut App,
     ) -> Self::PrepaintState {
         // 注册 hitbox 用于鼠标命中检测
-        window.paint_hitbox(bounds, None, MouseCursor::Default, cx);
+        window.insert_hitbox(bounds, HitboxBehavior::Normal);
         ()
     }
 }
@@ -195,13 +195,11 @@ impl Element for FixedSizeBox {
 
         window.paint_quad(gpui::quad(
             bounds,
-            gpui::Quad {
-                background: gpui::Paint::Color(rgba(0x00000000)),
-                border_widths: gpui::Edges::all(Pixels(2.0)),
-                border_color: rgb(0x1e40af),
-                border_radii: gpui::Corners::all(Pixels(4.0)),
-                ..Default::default()
-            },
+            gpui::Corners::all(Pixels(4.0)),
+            gpui::Background::Transparent,
+            gpui::Edges::all(Pixels(2.0)),
+            rgb(0x1e40af),
+            gpui::BorderStyle::Solid,
         ));
     }
 }
@@ -334,7 +332,6 @@ let el: AnyElement = div().child("Content").into_any();
 ### 11.4.1 跨帧元素身份
 
 ```rust
-#[derive(Deref, DerefMut, Clone, Default, Debug, Eq, PartialEq, Hash)]
 pub struct GlobalElementId(pub(crate) Arc<[ElementId]>);
 ```
 
@@ -456,7 +453,7 @@ impl Element for LightItem {
     }
 
     fn prepaint(&mut self, _, bounds, state, window, cx) {
-        window.paint_hitbox(bounds, None, MouseCursor::Default, cx);
+        window.insert_hitbox(bounds, HitboxBehavior::Normal);
     }
 
     fn paint(&mut self, _, bounds, _, _, window, cx) {
@@ -500,7 +497,7 @@ impl Element for CustomElement {
         window: &mut Window,
         cx: &mut App,
     ) -> Self::PrepaintState {
-        window.paint_hitbox(bounds, None, MouseCursor::Default, cx);
+        window.insert_hitbox(bounds, HitboxBehavior::Normal);
     }
 
     fn paint(

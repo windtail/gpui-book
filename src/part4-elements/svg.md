@@ -17,12 +17,12 @@ impl Render for IconView {
             .child(
                 svg()
                     .path("icons/search.svg")  // 嵌入资源
-                    .size(Pixels(16.0))
+                    .size(px(16.0))
             )
             .child(
                 svg()
                     .path("icons/close.svg")
-                    .size(Pixels(16.0))
+                    .size(px(16.0))
             )
     }
 }
@@ -35,7 +35,7 @@ impl Render for IconView {
 ```rust
 svg()
     .external_path("/home/user/assets/icon.svg")  // 文件系统路径
-    .size(Pixels(32.0))
+    .size(px(32.0))
 ```
 
 `.external_path()` 用于加载文件系统中的 SVG 文件，`.path()` 用于嵌入资源。
@@ -45,7 +45,7 @@ svg()
 svg()
     .path("icons/star.svg")
     .size(Pixels(24.0))
-    .text_yellow_500()  // 通过 currentColor 控制 SVG 填充色
+    .text_color(yellow_500)  // 通过 currentColor 控制 SVG 填充色
 ```
 
 SVG 元素支持 `InteractiveElement`，可以注册事件：
@@ -66,9 +66,18 @@ svg()
 
 ```rust
 pub struct Transformation {
-    scale: Size<f32>,       // 缩放
-    translate: Point<Pixels>,  // 平移
-    rotate: Radians,        // 旋转
+    // 字段私有，通过构造器方法创建
+}
+
+impl Transformation {
+    pub fn scale(scale: Size<f32>) -> Self;        // 缩放
+    pub fn translate(translate: Point<Pixels>) -> Self;  // 平移
+    pub fn rotate(rotate: impl Into<Radians>) -> Self;   // 旋转
+
+    // 链式方法
+    pub fn with_scaling(self, scale: Size<f32>) -> Self;
+    pub fn with_translation(self, translate: Point<Pixels>) -> Self;
+    pub fn with_rotation(self, rotate: impl Into<Radians>) -> Self;
 }
 ```
 
@@ -104,25 +113,22 @@ use gpui::radians;
 
 svg()
     .path("icons/rotate.svg")
-    .with_transformation(Transformation {
-        rotate: radians(std::f32::consts::PI / 4.0),  // 45度
-        ..Default::default()
-    })
+    .with_transformation(Transformation::rotate(radians(std::f32::consts::PI / 4.0)))  // 45度
 ```
 
 ### 15.2.5 链式变换
 
-组合多个变换：
+组合多个变换使用链式方法：
 
 ```rust
 // 先缩放，再平移，再旋转
 svg()
     .path("icons/transformed.svg")
-    .with_transformation(Transformation {
-        scale: size(1.5, 1.5),
-        translate: point(px(5.0), px(10.0)),
-        rotate: radians(0.785),  // ~45度
-    })
+    .with_transformation(
+        Transformation::scale(size(1.5, 1.5))
+            .with_translation(point(px(5.0), px(10.0)))
+            .with_rotation(radians(0.785)),  // ~45度
+    )
 ```
 
 **注意**：变换只影响渲染，不影响布局尺寸和 hitbox 区域。
@@ -144,7 +150,7 @@ svg()
 svg()
     .path("icons/menu.svg")
     .size(Pixels(20.0))
-    .text_color(Colors::get(cx).foreground)  // 跟随主题色
+    .text_color(Colors::for_appearance(window).foreground)  // 跟随主题色
 
 // 照片：用 img
 img("photos/profile.jpg")

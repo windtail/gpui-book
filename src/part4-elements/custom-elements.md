@@ -118,7 +118,7 @@ impl Element for ProgressBar {
         cx: &mut App,
     ) -> Self::PrepaintState {
         // 注册 hitbox 以支持鼠标事件
-        window.paint_hitbox(bounds, None, gpui::MouseCursor::Default, cx);
+        window.insert_hitbox(bounds, gpui::HitboxBehavior::Normal);
         ()
     }
 ```
@@ -231,7 +231,7 @@ impl Element for Scrollbar {
         cx: &mut App,
     ) -> Self::PrepaintState {
         // 注册 hitbox 用于拖拽滑块
-        window.paint_hitbox(bounds, None, gpui::MouseCursor::Default, cx)
+        window.insert_hitbox(bounds, gpui::HitboxBehavior::Normal)
     }
 
     fn paint(
@@ -484,14 +484,11 @@ fn prepaint(
     // 没有 hitbox 的元素不会收到鼠标事件
 
     // 基本 hitbox
-    let hitbox = window.paint_hitbox(
+    let hitbox = window.insert_hitbox(
         bounds,
-        None,  // 可选的自定义光标
-        gpui::MouseCursor::Default,
-        cx,
+        gpui::HitboxBehavior::Normal,
     );
 
-    // 使用 None 作为光标类型保持默认
     hitbox
 }
 ```
@@ -572,7 +569,8 @@ impl Element for LazyElement {
             if let Some(item) = self.items.get(i) {
                 let item_bounds = self.compute_item_bounds(i);
                 window.paint_quad(gpui::fill(item_bounds, item.color));
-                window.paint_text(item_bounds.origin, item.text.as_str(), ...);
+                // 文本通过 TextRun + window.paint_glyph() 绘制
+                // 或使用 div().child(text) 在更高层级渲染
             }
         }
         // 不可见的项不产生任何绘制指令

@@ -34,7 +34,7 @@ div()
 
 `.flex_col()` 将主轴设为垂直方向，子元素从上到下排列。上例中，`flex_1()` 让 Body 区域占据所有剩余空间。
 
-### 18.1.2 反向布局：`flex_row_rev()`、`flex_col_rev()`
+### 18.1.2 反向布局：`flex_row_reverse()`、`flex_col_reverse()`
 
 反向布局反转主轴方向，但 `justify_*` 方法的对齐方向也会跟随反转。
 
@@ -42,7 +42,7 @@ div()
 // 从右到左排列
 div()
     .flex()
-    .flex_row_rev()
+    .flex_row_reverse()
     .gap_2()
     .child(div().child("First"))  // 视觉上在最右侧
     .child(div().child("Second")) // 视觉上在中间
@@ -51,7 +51,7 @@ div()
 // 从下到上排列
 div()
     .flex()
-    .flex_col_rev()
+    .flex_col_reverse()
     .gap_2()
     .child(div().child("Bottom")) // 视觉上在最下方
     .child(div().child("Middle"))

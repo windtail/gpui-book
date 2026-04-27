@@ -22,7 +22,7 @@ impl Render for Counter {
         div()
             .id("counter")
             .size(px(200.0))
-            .bg(cx.theme().background)
+            .bg(rgb(0x2d2d2d))
             .on_mouse_down(MouseButton::Left, cx.listener(|this, event: &MouseDownEvent, _, cx| {
                 // event.position: Point<Pixels> — 鼠标相对窗口位置
                 // event.modifiers: Modifiers — 修饰键
@@ -362,10 +362,8 @@ impl Render for FileDropArea {
                     cx.notify();
                 }),
             )
-            .on_drop(cx.listener(|this, paths: Option<&ExternalPaths>, _, cx| {
-                if let Some(ExternalPaths(paths)) = paths {
-                    this.files = Some(paths.clone().into_vec());
-                }
+            .on_drop(cx.listener(|this, paths: &ExternalPaths, _, cx| {
+                this.files = Some(paths.paths().iter().map(|p| p.clone()).collect());
                 this.is_hovering = false;
                 cx.notify();
             }))
@@ -441,23 +439,24 @@ impl Render for TodoList {
             .on_drag_move::<String>(cx.listener(|_this, event: &DragMoveEvent<String>, _, _| {
                 println!("dragging: {}", event.drag.value());
             }))
-            .on_drop(cx.listener(|this, text: Option<&String>, _, cx| {
-                if let Some(text) = text {
-                    this.items.push(text.clone());
-                    cx.notify();
-                }
+            .on_drop(cx.listener(|this, text: &String, _, cx| {
+                this.items.push(text.clone());
+                cx.notify();
             }))
             .children(self.items.iter().enumerate().map(|(i, item)| {
+                let item_clone = item.clone();
                 div()
                     .id(("item", i))
-                    .draggable(item.clone())
+                    .on_drag(item_clone, |_, _, _, _| {
+                        // 创建拖拽预览
+                    })
                     .child(item.clone())
             }))
     }
 }
 ```
 
-`DragMoveEvent<T>` 携带类型化的拖拽数据，`event.drag.value()` 获取 `T`。
+`DragMoveEvent<T>` 携带类型化的拖拽数据，`event.drag.value()` 获取 `T`。`on_drop` 的回调接收 `&T`（不是 `Option`），GPUI 在焦点元素被 drop 时调用。`on_drag` 设置拖拽源和预览。
 
 ## 26.7 Hitbox 与命中检测
 

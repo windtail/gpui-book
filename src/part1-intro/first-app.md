@@ -217,7 +217,7 @@ WindowOptions {
 ```rust
 fn enter_fullscreen(cx: &mut App, handle: WindowHandle<HelloWorld>) {
     if let Err(e) = cx.update_window(handle, |_, window, cx| {
-        window.set_fullscreen(true, cx);
+        window.toggle_fullscreen();
     }) {
         eprintln!("Failed to toggle fullscreen: {e}");
     }
@@ -265,18 +265,34 @@ impl Render for Counter {
                     .flex()
                     .gap_2()
                     .child(
-                        button("decrement", "－")
+                        div()
+                            .id("decrement")
+                            .px_3()
+                            .py_1()
+                            .rounded_md()
+                            .bg(rgb(0x3b82f6))
+                            .text_white()
+                            .cursor_pointer()
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.count -= 1;
                                 cx.notify();
-                            })),
+                            }))
+                            .child("－"),
                     )
                     .child(
-                        button("increment", "＋")
+                        div()
+                            .id("increment")
+                            .px_3()
+                            .py_1()
+                            .rounded_md()
+                            .bg(rgb(0x3b82f6))
+                            .text_white()
+                            .cursor_pointer()
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.count += 1;
                                 cx.notify();
-                            })),
+                            }))
+                            .child("＋"),
                     ),
             )
     }
@@ -431,18 +447,34 @@ impl Render for Counter {
                     .flex()
                     .gap_3()
                     .child(
-                        button("decrement", "－")
+                        div()
+                            .id("decrement")
+                            .px_4()
+                            .py_2()
+                            .rounded_md()
+                            .bg(rgb(0x3b82f6))
+                            .text_white()
+                            .cursor_pointer()
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.count -= 1;
                                 cx.notify();
-                            })),
+                            }))
+                            .child("－"),
                     )
                     .child(
-                        button("increment", "＋")
+                        div()
+                            .id("increment")
+                            .px_4()
+                            .py_2()
+                            .rounded_md()
+                            .bg(rgb(0x3b82f6))
+                            .text_white()
+                            .cursor_pointer()
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.count += 1;
                                 cx.notify();
-                            })),
+                            }))
+                            .child("＋"),
                     ),
             )
     }
@@ -512,12 +544,12 @@ GPUI 本身不提供热重载，但有几种方式可以在开发时实现类似
 impl Render for MyView {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
-            .on_key_down(cx.listener(|_, event: &KeyDownEvent, _, cx| {
+            .on_key_down(|event: &KeyDownEvent, window: &mut Window, _cx: &mut App| {
                 // Cmd+R 刷新
                 if event.keystroke.key == "r" && event.keystroke.modifiers.command {
-                    cx.refresh();
+                    window.refresh();
                 }
-            }))
+            })
             .child("Press Cmd+R to refresh")
     }
 }

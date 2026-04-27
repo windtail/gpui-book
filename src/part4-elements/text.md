@@ -109,7 +109,7 @@ let text = StyledText::new(
         },
         color: rgb(0x3b82f6),
         background_color: None,
-        underline: false,
+        underline: None,
         strikethrough: None,
     },
     TextRun {
@@ -117,7 +117,7 @@ let text = StyledText::new(
         font: Font::default(),
         color: rgb(0x000000),
         background_color: None,
-        underline: false,
+        underline: None,
         strikethrough: None,
     },
 ]);
@@ -130,7 +130,7 @@ div().child(text)
 ```rust
 struct CodeLine {
     code: String,
-    highlights: Vec<(usize, usize, rgb)>,  // (start, end, color)
+    highlights: Vec<(usize, usize, Hsla)>,  // (start, end, color)
 }
 
 impl Render for CodeLine {
@@ -219,9 +219,10 @@ impl Render for LinkView {
         ]);
 
         InteractiveText::new("link", styled)
-            .on_click(cx.listener(|this, ranges, window, cx| {
-                cx.open_url(&this.url);
-            }))
+            .on_click(vec![0..self.url.len()], |index, window, cx| {
+                // index: 被点击的文本范围索引
+                window.open_url("https://example.com");
+            })
     }
 }
 ```
@@ -232,7 +233,7 @@ impl Render for LinkView {
 
 ```rust
 InteractiveText::new("tooltip-text", styled_text)
-    .on_click(cx.listener(|this, ranges, window, cx| { ... }))
+    .on_click(vec![0..10], |_index, _window, _cx| { ... })
     .tooltip(|cx| {
         div()
             .p_2()
@@ -255,7 +256,9 @@ impl Render for MarkdownPreview {
         let styled = self.build_styled_text();
 
         InteractiveText::new("markdown", styled)
-            .on_click(cx.listener(|this, ranges, window, cx| {
+            .on_click(this.links.iter().map(|(_, r)| r.clone()).collect(), |index, _window, _cx| {
+                // 根据 index 判断点击了哪个链接
+            })
                 for range in ranges {
                     // 判断点击是否落在链接范围内
                     for (url, link_range) in &this.links {
@@ -271,16 +274,3 @@ impl Render for MarkdownPreview {
 ```
 
 `on_click` 回调接收被点击的文本 `Range<usize>` 集合，可用于判断具体点击了哪个链接区域。
-
-### 13.3.4 `label()` 快捷方式
-
-对于单行可交互文本，可以使用 `label()`：
-
-```rust
-label("Click me")
-    .on_click(cx.listener(|this, _, window, cx| {
-        // 处理点击
-    }))
-```
-
-`label()` 是 `InteractiveText` 的简化构造器，适用于不需要多段样式的场景。

@@ -90,7 +90,22 @@ fn main() {
 6. 等待下一个事件
 
 ```rust
-use gpui::{div, button, IntoElement, Context, Window};
+use gpui::{
+    div, InteractiveElement, ParentElement, IntoElement, Context, Window,
+    px, SharedString,
+};
+
+fn button(id: impl Into<ElementId>, text: impl Into<SharedString>) -> impl IntoElement {
+    div()
+        .id(id)
+        .px_3()
+        .py_1()
+        .rounded_md()
+        .bg(rgb(0x3b82f6))
+        .text_white()
+        .cursor_pointer()
+        .child(text.into())
+}
 
 struct Counter {
     count: i32,
@@ -101,8 +116,7 @@ impl Render for Counter {
         div()
             .child(format!("Count: {}", self.count))
             .child(
-                button()
-                    .label("Increment")
+                button("increment", "Increment")
                     .on_click(cx.listener(|this, _, _, cx| {
                         this.count += 1;
                         cx.notify(); // 触发重新渲染

@@ -161,9 +161,19 @@ struct TextInput {
     content: String,
     cursor: usize,
     marked_range: Option<Range<usize>>,
+    focus_handle: FocusHandle,
 }
 
 impl TextInput {
+    fn new(cx: &mut Context<Self>) -> Self {
+        Self {
+            content: String::new(),
+            cursor: 0,
+            marked_range: None,
+            focus_handle: cx.focus_handle(),
+        }
+    }
+
     fn paint_input_handler(
         &mut self,
         element_bounds: Bounds<gpui::Pixels>,
@@ -171,8 +181,12 @@ impl TextInput {
         cx: &mut Context<Self>,
     ) {
         // 在 paint 阶段注册输入处理器
-        let handler = ElementInputHandler::new(element_bounds, cx.entity());
-        window.handle_input(handler, cx);
+        // 需要传入 focus_handle 和 element_bounds
+        window.handle_input(
+            &self.focus_handle,
+            ElementInputHandler::new(element_bounds, cx.entity()),
+            cx,
+        );
     }
 }
 ```
@@ -196,8 +210,8 @@ impl Element for TextInputElement {
         // 2. 创建输入处理器
         let handler = ElementInputHandler::new(element_bounds, self.view.clone());
 
-        // 3. 注册到窗口
-        window.handle_input(handler, cx);
+        // 3. 注册到窗口（需要 focus_handle）
+        window.handle_input(&focus_handle, handler, cx);
 
         // 4. 正常绘制文本
         self.paint_text(bounds, window, cx);

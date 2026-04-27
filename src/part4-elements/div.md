@@ -43,7 +43,7 @@ impl Div {
         self
     }
 
-    pub fn on_hover(mut self, handler: impl Fn(&HoverEvent, &mut Window, &mut App) + 'static) -> Self {
+    pub fn on_hover(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self {
         self.interactivity.on_hover = Some(Box::new(handler));
         self
     }
@@ -145,7 +145,7 @@ div()
     .child("字符串字面量")     // &'static str
     .child(SharedString::from("动态字符串"))
     .child(div())             // 嵌套 div
-    .child(button().label("按钮"))
+    .child(div().child("按钮"))
     .child(img("icon.png"))   // 图片
 ```
 
@@ -254,8 +254,8 @@ div()
     .on_click(|event: &ClickEvent, window: &mut Window, cx: &mut App| {
         println!("Clicked at {:?}", event.position);
     })
-    .on_hover(|event: &HoverEvent, window: &mut Window, cx: &mut App| {
-        if event.is_hovering() {
+    .on_hover(|hovering: &bool, window: &mut Window, cx: &mut App| {
+        if *hovering {
             println!("Mouse entered");
         } else {
             println!("Mouse left");
@@ -304,8 +304,10 @@ ID 类型：
 ```rust
 div().id("string_id")                    // ElementId::Name
 div().id(0)                              // ElementId::Integer
-div().id(("row", 5))                     // ElementId::Tuple
-div().id(("item", row, col))             // 多元组
+div().id(("row", 5))                     // ElementId::NamedInteger (via From impl)
+```
+
+不支持 3 元素或更多元素的元组——GPUI 的 `From` 实现仅支持 `(&str, usize)` 二元组。
 ```
 
 ### 12.5.2 `.group()` 组合样式

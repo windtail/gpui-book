@@ -86,14 +86,12 @@ canvas(
 
         // 带边框的矩形
         window.paint_quad(gpui::quad(
-            gpui::Quad {
-                bounds,
-                background: gpui::Paint::Color(gpui::rgba(0x00000000)),
-                border_widths: gpui::Edges::all(Pixels(2.0)),
-                border_color: gpui::rgb(0x1e40af),
-                border_radii: gpui::Corners::all(Pixels(8.0)),
-                ..Default::default()
-            },
+            bounds,
+            gpui::Corners::all(Pixels(8.0)),
+            gpui::Background::Transparent,
+            gpui::Edges::all(Pixels(2.0)),
+            gpui::rgb(0x1e40af),
+            gpui::BorderStyle::Solid,
         ));
 
         // 半透明覆盖层
@@ -112,11 +110,9 @@ use gpui::{Path, point, px};
 
 canvas(
     |bounds, window, cx| {
-        let mut path = Path::new();
-        path.move_to(point(px(10.0), px(10.0)));
+        let mut path = Path::new(point(px(10.0), px(10.0)));
         path.line_to(point(px(100.0), px(50.0)));
         path.line_to(point(px(50.0), px(100.0)));
-        path.close();
         path
     },
     |path, bounds, window, cx| {
@@ -125,31 +121,35 @@ canvas(
 )
 ```
 
-### 16.2.3 绘制 Sprite（贴图）
+### 16.2.3 绘制图片
+
+在 canvas 中绘制图片需要使用 `img()` 元素而非 `paint_sprite`：
 
 ```rust
-use gpui::{Sprite, Bounds, Point, Size};
-
 canvas(
     |bounds, window, cx| {
-        // 从资源加载图片
-        let image = window.load_image("icon.png");
-        image
+        bounds
     },
-    |image, bounds, window, cx| {
-        if let Ok(img) = image {
-            let sprite_bounds = Bounds::new(
-                point(px(10.0), px(10.0)),
-                size(px(32.0), px(32.0)),
-            );
-            window.paint_sprite(
-                img,
-                false,  // grayscale
-                sprite_bounds,
-            );
-        }
+    |bounds, window, cx| {
+        // 在 canvas 中使用 img 元素渲染图片
+        // 注意：canvas 内部不能直接渲染元素，
+        // 图片加载应通过 Asset 系统或 img() 元素完成
     },
 )
+```
+
+对于需要在自定义位置渲染图片的场景，推荐使用 `div()` + `img()` 组合：
+
+```rust
+div()
+    .relative()
+    .child(
+        img("icon.png")
+            .absolute()
+            .top(px(10.))
+            .left(px(10.))
+            .size(px(32.))
+    )
 ```
 
 ## 16.3 使用场景
