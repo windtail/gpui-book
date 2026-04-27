@@ -170,12 +170,12 @@ div()
 
 `min-content` 让轨道收缩到内容所需的最小宽度。`max-content` 让轨道扩展到内容所需的最大宽度。
 
-### 19.3.2 `fr` 分数单位
+### 19.3.2 `col_span` 跨列
 
-`fr` 单位将可用空间按比例分配给轨道。GPUI 的 `grid_cols(n)` 在底层使用 `repeat(n, minmax(0, 1fr))` 实现。
+`col_span(n)` 让子元素跨越多个网格列。GPUI 的 `grid_cols(n)` 创建 `n` 个等宽列，配合 `col_span` 实现不同比例分配：
 
 ```rust
-// 不等的列宽比例：1:2:1
+// 不等的列宽比例：1:2:1（共4列，中间占2列）
 div()
     .grid()
     .grid_cols(4)
@@ -183,22 +183,24 @@ div()
     .child(
         div()
             .col_span(1)
-            .bg(red)
+            .bg(rgb(0xef4444))
             .child("25%")
     )
     .child(
         div()
             .col_span(2)
-            .bg(green)
+            .bg(rgb(0x22c55e))
             .child("50%")
     )
     .child(
         div()
             .col_span(1)
-            .bg(blue)
+            .bg(rgb(0x3b82f6))
             .child("25%")
     )
 ```
+
+同理 `row_span(n)` 让子元素跨越多行。注意：GPUI 的 `grid_cols` / `grid_rows` 只接受列/行数（`u16`），不支持类似 CSS `grid-template-columns: 1fr 2fr 1fr` 的精细轨道控制——需要不等比例时，应通过增加列数配合 `col_span` 实现。
 
 ## 19.4 Grid vs Flex
 
